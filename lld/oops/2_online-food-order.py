@@ -7,7 +7,6 @@ class Order:
         self._order_id = order_id
         self._customer_id = customer_id
         self._items: list[tuple[str, float]] = []
-        self._total_amount = 0
         self._is_placed = False
 
     @property
@@ -27,17 +26,26 @@ class Order:
         copy = list(self._items)
         return copy
 
+    @property
+    def total_amount(self) -> float:
+        total = 0
+        for name, price in self._items:
+            total += price
+
+        return total
+
     def add_item(self, name: str, price: float) -> None:
         if self._is_placed:
-            print("Cannot Modify the placed order.")
-            return
+            raise RuntimeError("Cannot modify a placed order.")
 
         self._items.append((name, price))
-        self._total_amount += price
 
     def place_order(self) -> bool:
-        if self._is_placed or not self._items:
-            return False
+        if not self._items:
+            raise RuntimeError("Please Add items to place an order")
+        elif self._is_placed:
+            raise RuntimeError("Order is already placed")
+
         self._is_placed = True
 
         return True
@@ -49,24 +57,46 @@ class Order:
         status = "PLACED" if self._is_placed else "PENDING"
 
         print(f"Order {self._order_id} for {self._customer_id} is {status}")
-        for item in self._items:
-            print(f"- {item} -  ")
+        for name, price in self._items:
+            print(f"- {name} - {price}  ")
 
-        print(f"Total : {self._total_amount :.2f}")
-
-
-order1 = Order("ORD-001", "UID1234")
+        print(f"Total : {self.total_amount :.2f}")
 
 
-order1.display_order()
-print(order1.get_items_count())
-order1.add_item(name="Pizza", price=349.00)
-order1.add_item(name="Garlic Bread", price=49.00)
-print(order1.items)
+if __name__ == "__main__":
 
+    order1 = Order("ORD-001", "UID1234")
 
-print(order1._order_id)
+    order1.display_order()
+    print(order1.get_items_count())
+    order1.add_item(name="Pizza", price=349.00)
+    order1.add_item(name="Garlic Bread", price=49.00)
+    print(order1.items)
 
+    order1.display_order()
+    print(order1._order_id)
 
-order1.items.append(("Free Burger", 0))
-print(order1.get_items_count())
+    order1.items.append(("Free Burger", 0))
+    print(order1.get_items_count())
+
+    order1.place_order()
+
+    try:
+        order1.add_item("Coke", 60)
+    except RuntimeError as e:
+        print(f"Failed {e}")
+
+    order2 = Order(order_id="OID343", customer_id="UID433")
+
+    try:
+        order2.place_order()
+    except RuntimeError as e:
+        print(f"Failed {e}")
+
+    order2.add_item("Lays", 20.00)
+    order2.place_order()
+
+    try:
+        order2.place_order()
+    except RuntimeError as e:
+        print(f"Failed {e}")

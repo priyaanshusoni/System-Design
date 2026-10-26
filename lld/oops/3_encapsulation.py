@@ -1,9 +1,6 @@
 # MAke everything private by default then selectively expose what needs to be public
 
 
-from multiprocessing import Value
-
-
 class Product:
 
     def __init__(self, name, price) -> None:
